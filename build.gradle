@@ -40,15 +40,17 @@ dependencies {
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
-/* DOCKER */
-
+/* DOCKER PLUG-IN */
 apply plugin: 'docker'
 
 // Generates a docker image with latest APP version
 task buildDocker(type: Docker, dependsOn: build) {
-	push = false // use to push to DockerHub. You require authentication
-	applicationName = jar.baseName
-	dockerfile = file('src/main/docker/Dockerfile')
-}
 
-/* DOCKER */
+    // Generated image uses this name:
+	applicationName = jar.baseName
+
+    // Dockerfile to use
+	dockerfile     = file('src/main/docker/Dockerfile')
+
+}
+/* DOCKER PLUG-IN */
