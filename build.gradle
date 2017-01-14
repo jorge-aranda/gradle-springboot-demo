@@ -44,7 +44,7 @@ dependencies {
 apply plugin: 'docker'
 
 // Generates a docker image with latest APP version
-task buildDocker(type: Docker, dependsOn: build) {
+task buildDockerContainer(type: Docker, dependsOn: build) {
 
     // Generated image uses this name:
 	applicationName = jar.baseName
