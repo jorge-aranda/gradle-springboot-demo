@@ -52,5 +52,18 @@ task buildDocker(type: Docker, dependsOn: build) {
     // Dockerfile to use
 	dockerfile     = file('src/main/docker/Dockerfile')
 
+    // Copy your JAR into docker preparation folder
+    doFirst {
+        copy {
+            from jar
+            into stageDir
+            rename {
+                // Necessary to integrate with 'Dockerfile'
+                filename -> filename.replace jar.archiveName, 'app.jar'
+            }
+
+        }
+    }
+
 }
 /* DOCKER PLUG-IN */
