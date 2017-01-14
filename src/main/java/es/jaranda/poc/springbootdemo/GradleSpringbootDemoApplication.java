@@ -17,8 +17,6 @@ public class GradleSpringbootDemoApplication {
 		SpringApplication.run(GradleSpringbootDemoApplication.class, args);
 	}
 
-
-
 }
 
 @XmlRootElement(name = "response")
