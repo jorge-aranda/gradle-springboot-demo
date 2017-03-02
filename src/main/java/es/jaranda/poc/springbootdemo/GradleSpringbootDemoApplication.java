@@ -1,6 +1,7 @@
 
 package es.jaranda.poc.springbootdemo;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
@@ -79,6 +80,21 @@ public class GradleSpringbootDemoApplication {
         return new RabbitAdmin(connectionFactory);
     }
 
+    @Bean
+    IntegrationFlow recieveChatMessage(
+            final ConnectionFactory connectionFactory,
+            @Value("${chat_example_incoming.queue_name}")
+            final String chatExampleIncomingQueueName) {
+        return IntegrationFlows.from(
+                Amqp.inboundAdapter(
+                        connectionFactory, chatExampleIncomingQueueName
+                )).handle(
+                        p->LoggerFactory.getLogger(
+                                GradleSpringbootDemoApplication.class).info(
+                                "Message recieved: '" + p.getPayload() + "'"
+                        )
+                ).get();
+    }
 
 
 }
