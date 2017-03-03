@@ -23,8 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 @SpringBootApplication
 public class GradleSpringbootDemoApplication {
@@ -84,11 +86,13 @@ public class GradleSpringbootDemoApplication {
     IntegrationFlow recieveChatMessage(
             final ConnectionFactory connectionFactory,
             @Value("${chat_example_incoming.queue_name}")
-            final String chatExampleIncomingQueueName) {
+            final String chatExampleIncomingQueueName,
+            @Value("${chat_example_incoming.number_of_consumers:1}")
+            final int numberOfConsumers) {
         return IntegrationFlows.from(
                 Amqp.inboundAdapter(
                         connectionFactory, chatExampleIncomingQueueName
-                )).handle(
+                ).concurrentConsumers(numberOfConsumers)).handle(
                         p->LoggerFactory.getLogger(
                                 GradleSpringbootDemoApplication.class).info(
                                 "Message recieved: '" + p.getPayload() + "'"
@@ -102,6 +106,7 @@ public class GradleSpringbootDemoApplication {
 @RestController
 class PublisherController {
 
+    public static final ResponseDto SUCCESS_RESPONSE_DTO = new ResponseDto(true);
     private final RabbitTemplate chatPublisherTemplate;
 
     @Autowired
@@ -116,10 +121,22 @@ class PublisherController {
 
         chatPublisherTemplate.convertAndSend(message);
 
-        return new ResponseDto(true);
+        return SUCCESS_RESPONSE_DTO;
     }
 
+    @RequestMapping(value = "masiveMessages", method = POST)
+    public ResponseDto publishMassiveMessage(
+            @RequestBody final MassiveMessageDto massiveMessageDto  ) {
 
+        IntStream.range(0, massiveMessageDto.getTimes())
+                .parallel().forEach(i ->
+                chatPublisherTemplate.convertAndSend(
+                        massiveMessageDto.getContent()
+                )
+        );
+
+        return SUCCESS_RESPONSE_DTO;
+    }
 }
 
 @XmlRootElement(name = "response")
@@ -141,5 +158,38 @@ class ResponseDto {
 
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+}
+
+
+@XmlRootElement(name = "response")
+class MassiveMessageDto {
+
+    private String content;
+    @XmlElement(defaultValue = "1")
+    private int times;
+
+    public MassiveMessageDto() {
+    }
+
+    public MassiveMessageDto(final String content, final int times) {
+        this.content = content;
+        this.times = times;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public int getTimes() {
+        return times;
+    }
+
+    public void setTimes(int times) {
+        this.times = times;
     }
 }
