@@ -1,6 +1,7 @@
 
 package es.jaranda.poc.springbootdemo;
 
+import es.jaranda.poc.chatdemo.service.ChatMessageService;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.DirectExchange;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.amqp.Amqp;
@@ -29,6 +32,8 @@ import java.util.HashMap;
 import java.util.stream.IntStream;
 
 @SpringBootApplication
+@ComponentScan("es.jaranda.poc.chatdemo, es.jaranda.poc.springbootdemo")
+@EnableRedisRepositories("es.jaranda.poc.chatdemo")
 public class GradleSpringbootDemoApplication {
 
     public static void main(String[] args) {
@@ -85,6 +90,7 @@ public class GradleSpringbootDemoApplication {
     @Bean
     IntegrationFlow recieveChatMessage(
             final ConnectionFactory connectionFactory,
+            final ChatMessageService chatMessageService,
             @Value("${chat_example_incoming.queue_name}")
             final String chatExampleIncomingQueueName,
             @Value("${chat_example_incoming.number_of_consumers:1}")
@@ -93,9 +99,8 @@ public class GradleSpringbootDemoApplication {
                 Amqp.inboundAdapter(
                         connectionFactory, chatExampleIncomingQueueName
                 ).concurrentConsumers(numberOfConsumers)).handle(
-                        p->LoggerFactory.getLogger(
-                                GradleSpringbootDemoApplication.class).info(
-                                "Message recieved: '" + p.getPayload() + "'"
+                        p-> chatMessageService.postChatMessage(
+                                null, p.getPayload().toString()
                         )
                 ).get();
     }
