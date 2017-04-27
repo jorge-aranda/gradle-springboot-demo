@@ -31,6 +31,8 @@ repositories {
 
 
 dependencies {
+
+    // Spring Boot Starters
     compile('org.springframework.boot:spring-boot-starter-amqp')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-data-redis')
@@ -38,6 +40,9 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-integration')
     runtime('com.h2database:h2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
+
+    // Lombok
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.16'
 }
 
 /* DOCKER PLUG-IN */
