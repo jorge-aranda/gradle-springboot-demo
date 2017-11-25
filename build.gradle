@@ -20,7 +20,7 @@ apply plugin: 'org.springframework.boot'
 
 jar {
     baseName = 'gradle-springboot-demo'
-    version = '0.1.1-SNAPSHOT'
+    version = '0.1.1.RELEASE'
 }
 
 sourceCompatibility = 1.8
